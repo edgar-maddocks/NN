@@ -1,5 +1,6 @@
 import numpy as np
 import numba
+from numpy.core.multiarray import array as array
 
 
 class Layer:
@@ -52,3 +53,21 @@ class Tanh(Activation):
         tanh = lambda x: np.tanh(x)
         d_tanh = lambda x: 1 - (np.tanh(x) ** 2)
         super().__init__(tanh, d_tanh)
+
+
+class ReLU(Activation):
+    def __init__(self):
+        relu = lambda x: x * (x > 0)
+        d_relu = lambda x: 1.0 * (x > 0)
+        super().__init__(relu, d_relu)
+
+
+class SoftMax(Layer):
+    def forward(self, input: np.array):
+        e_x = np.exp(input)
+        self.output = e_x / np.sum(e_x)
+        return self.output
+
+    def backwards(self, output_error_grad: np.array, lr):
+        n = np.size(self.output)
+        return np.dot((np.identity(n) - self.output.T) * self.output, output_error_grad)
